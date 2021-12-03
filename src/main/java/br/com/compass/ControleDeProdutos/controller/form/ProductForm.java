@@ -9,9 +9,9 @@ import br.com.compass.ControleDeProdutos.model.Product;
 
 public class ProductForm {
 	
-	@NotNull @NotEmpty @Length(min = 5)
+	@NotNull @NotEmpty @Length(min = 5, max = 100)
 	private String name;
-	@NotNull @NotEmpty @Length(min = 10)
+	@NotNull @NotEmpty @Length(min = 10, max = 1000)
 	private String description;
 	@NotNull 
 	private Double price;
