@@ -22,6 +22,26 @@ public class Product {
 	public Product() {
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	public void setDataCriacao(LocalDateTime dataCriacao) {
+		this.dataCriacao = dataCriacao;
+	}
+
 	public Product(String name, String description, Double price) {
 		this.name = name;
 		this.description = description;
