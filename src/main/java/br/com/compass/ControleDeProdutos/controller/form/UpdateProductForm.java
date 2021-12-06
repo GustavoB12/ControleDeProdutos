@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import br.com.compass.ControleDeProdutos.model.Product;
 import br.com.compass.ControleDeProdutos.repository.ProductRepository;
 
-public class AtualizacaoProductForm {
+public class UpdateProductForm {
 
 	@NotNull
 	@NotEmpty

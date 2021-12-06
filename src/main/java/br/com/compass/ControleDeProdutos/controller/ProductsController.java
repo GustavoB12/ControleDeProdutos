@@ -1,6 +1,7 @@
 package br.com.compass.ControleDeProdutos.controller;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.compass.ControleDeProdutos.controller.dto.ProductDto;
-import br.com.compass.ControleDeProdutos.controller.form.AtualizacaoProductForm;
+import br.com.compass.ControleDeProdutos.controller.form.UpdateProductForm;
 import br.com.compass.ControleDeProdutos.controller.form.ProductForm;
 import br.com.compass.ControleDeProdutos.model.Product;
 import br.com.compass.ControleDeProdutos.repository.ProductRepository;
@@ -39,8 +40,9 @@ public class ProductsController {
 
 	@GetMapping
 	@Cacheable(value = "listaDeProdutos")
-	public Page<ProductDto> list(@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao) {
-		
+	public Page<ProductDto> list(
+			@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao) {
+
 		Page<Product> produtos = productRepository.findAll(paginacao);
 		return ProductDto.converter(produtos);
 	}
@@ -48,46 +50,44 @@ public class ProductsController {
 	@PostMapping
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
 	@Transactional
-	public ResponseEntity<ProductDto> create(@RequestBody @Valid ProductForm form, UriComponentsBuilder uriBuilder){
-		
+	public ResponseEntity<ProductDto> create(@RequestBody @Valid ProductForm form, UriComponentsBuilder uriBuilder) {
+
 		Product product = form.converter();
 		productRepository.save(product);
 
 		URI uri = uriBuilder.path("/products/{id}").buildAndExpand(product.getId()).toUri();
 		return ResponseEntity.created(uri).body(new ProductDto(product));
 	}
-	
+
 	@DeleteMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		Optional<Product> optional = productRepository.findById(id);
-		if (optional.isPresent()) {
-			productRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
-		return ResponseEntity.notFound().build();
+		productRepository.deleteById(id);
+		return ResponseEntity.ok().build();
+
 	}
+
 	@PutMapping("/{id}")
 	@Transactional
-	@CacheEvict(value = "listaDeTopicos", allEntries = true)
-	public ResponseEntity<ProductDto> update(@PathVariable Long id, @RequestBody @Valid AtualizacaoProductForm form) {
-		Optional<Product> optional = productRepository.findById(id);
-		if (optional.isPresent()) {
-			Product product = form.atualizar(id, productRepository);
-			return ResponseEntity.ok(new ProductDto(product));
-		}
-		
-		return ResponseEntity.notFound().build();
+	@CacheEvict(value = "listaDeProdutos", allEntries = true)
+	public ResponseEntity<ProductDto> update(@PathVariable Long id, @RequestBody @Valid UpdateProductForm form) {
+		Product product = form.atualizar(id, productRepository);
+		return ResponseEntity.ok(new ProductDto(product));
+
 	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDto> detalhar(@PathVariable Long id) {
 		Optional<Product> product = productRepository.findById(id);
-		if (product.isPresent()) {
-			return ResponseEntity.ok(new ProductDto(product.get()));
-		}
+		return ResponseEntity.ok(new ProductDto(product.get()));
 
-		return ResponseEntity.notFound().build();
 	}
-	
+	@GetMapping("/search")
+	@Cacheable(value = "listaDeProdutos")
+	public List<Product> search(@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao) {
+		List<Product> produtos = productRepository.search("", 1.0, 1000.0);
+		return produtos;
+	}
+
 }
