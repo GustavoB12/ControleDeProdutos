@@ -1,7 +1,6 @@
 package br.com.compass.ControleDeProdutos.controller;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -13,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.compass.ControleDeProdutos.controller.dto.ProductDto;
-import br.com.compass.ControleDeProdutos.controller.form.UpdateProductForm;
 import br.com.compass.ControleDeProdutos.controller.form.ProductForm;
+import br.com.compass.ControleDeProdutos.controller.form.UpdateProductForm;
 import br.com.compass.ControleDeProdutos.model.Product;
 import br.com.compass.ControleDeProdutos.repository.ProductRepository;
 
@@ -85,9 +85,11 @@ public class ProductsController {
 	}
 	@GetMapping("/search")
 	@Cacheable(value = "listaDeProdutos")
-	public List<Product> search(@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao) {
-		List<Product> produtos = productRepository.search("", 1.0, 1000.0);
-		return produtos;
+	public Page<ProductDto> search(@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao, 
+			@Param("q") String q, @Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice) {
+
+		Page<Product> produtos = productRepository.search(q, minPrice, maxPrice, paginacao);
+		return ProductDto.converter(produtos);
 	}
 
 }

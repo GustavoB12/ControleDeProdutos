@@ -1,7 +1,7 @@
 package br.com.compass.ControleDeProdutos.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -13,5 +13,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 			+ "OR UPPER(description) LIKE UPPER(CONCAT('%',:q,'%'))))"
 			+ "AND (:minPrice IS NULL OR price >= :minPrice)"
 			+ "AND (:maxPrice IS NULL OR price <= :maxPrice)", nativeQuery = true)
-	List<Product> search(String q, Double minPrice, Double maxPrice);
+	Page<Product> search(String q, Double minPrice, Double maxPrice, Pageable paginacao);
+
 }
