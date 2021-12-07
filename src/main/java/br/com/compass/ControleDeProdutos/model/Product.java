@@ -1,5 +1,6 @@
 package br.com.compass.ControleDeProdutos.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import javax.persistence.Entity;
@@ -16,6 +17,7 @@ public class Product {
 	private String name;
 	private String description;
 	private Double price;
+	private LocalDateTime dataCriacao = LocalDateTime.now();
 
 	public Product() {
 	}
@@ -74,5 +76,9 @@ public class Product {
 
 	public Double getPrice() {
 		return price;
+	}
+
+	public LocalDateTime getDataCriacao() {
+		return dataCriacao;
 	}
 }

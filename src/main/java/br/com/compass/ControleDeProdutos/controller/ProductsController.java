@@ -60,8 +60,8 @@ public class ProductsController {
 	}
 
 	@DeleteMapping("/{id}")
-	@Transactional
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
+	@Transactional
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		productRepository.deleteById(id);
 		return ResponseEntity.ok().build();
@@ -78,14 +78,16 @@ public class ProductsController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ProductDto> detalhar(@PathVariable Long id) {
+	public ResponseEntity<ProductDto> findById(@PathVariable Long id) {
 		Optional<Product> product = productRepository.findById(id);
 		return ResponseEntity.ok(new ProductDto(product.get()));
 
 	}
+
 	@GetMapping("/search")
 	@Cacheable(value = "listaDeProdutos")
-	public Page<ProductDto> search(@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao, 
+	public Page<ProductDto> search(
+			@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao,
 			@Param("q") String q, @Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice) {
 
 		Page<Product> produtos = productRepository.search(q, minPrice, maxPrice, paginacao);
