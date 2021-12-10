@@ -1,8 +1,5 @@
 package br.com.compass.ControleDeProdutos.controller;
 
-import java.net.URI;
-import java.util.Optional;
-
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -15,6 +12,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,60 +26,52 @@ import org.springframework.web.util.UriComponentsBuilder;
 import br.com.compass.ControleDeProdutos.controller.dto.ProductDto;
 import br.com.compass.ControleDeProdutos.controller.form.ProductForm;
 import br.com.compass.ControleDeProdutos.controller.form.UpdateProductForm;
-import br.com.compass.ControleDeProdutos.model.Product;
-import br.com.compass.ControleDeProdutos.repository.ProductRepository;
+import br.com.compass.ControleDeProdutos.service.ProductService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/products")
+@Api(value="API REST Produtos")
 public class ProductsController {
 
 	@Autowired
-	private ProductRepository productRepository;
-
+	private ProductService productService;
+	
+	@ApiOperation(value="Retorna uma lista de Produtos")
 	@GetMapping
 	@Cacheable(value = "listaDeProdutos")
 	public Page<ProductDto> list(
 			@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao) {
-
-		Page<Product> produtos = productRepository.findAll(paginacao);
-		return ProductDto.converter(produtos);
+		return productService.list(paginacao);
 	}
 
 	@PostMapping
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
 	@Transactional
 	public ResponseEntity<ProductDto> create(@RequestBody @Valid ProductForm form, UriComponentsBuilder uriBuilder) {
-
-		Product product = form.converter();
-		productRepository.save(product);
-
-		URI uri = uriBuilder.path("/products/{id}").buildAndExpand(product.getId()).toUri();
-		return ResponseEntity.created(uri).body(new ProductDto(product));
+		return productService.create(form, uriBuilder);
 	}
 
 	@DeleteMapping("/{id}")
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
 	@Transactional
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		productRepository.deleteById(id);
-		return ResponseEntity.ok().build();
-
+		return productService.delete(id);
 	}
 
 	@PutMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "listaDeProdutos", allEntries = true)
 	public ResponseEntity<ProductDto> update(@PathVariable Long id, @RequestBody @Valid UpdateProductForm form) {
-		Product product = form.atualizar(id, productRepository);
-		return ResponseEntity.ok(new ProductDto(product));
+		return productService.update(id, form);
 
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDto> findById(@PathVariable Long id) {
-		Optional<Product> product = productRepository.findById(id);
-		return ResponseEntity.ok(new ProductDto(product.get()));
-
+		return productService.findById(id);
 	}
 
 	@GetMapping("/search")
@@ -89,9 +79,7 @@ public class ProductsController {
 	public Page<ProductDto> search(
 			@PageableDefault(sort = "id", direction = Direction.ASC, page = 0, size = 10) Pageable paginacao,
 			@Param("q") String q, @Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice) {
-
-		Page<Product> produtos = productRepository.search(q, minPrice, maxPrice, paginacao);
-		return ProductDto.converter(produtos);
+		return productService.search(paginacao, q, minPrice, maxPrice);
 	}
 
 }
